@@ -5,16 +5,17 @@ import path from 'path';
 
 const { Pool } = pg;
 
+// Create a new pool instance with the connection string from environment variables
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // This is important for self-signed certificates
+    rejectUnauthorized: false,
   },
 });
 
 async function run() {
   try {
-    // Read your SQL file (schema.sql) from disk
+    // Read the SQL file (schema.sql) from the current directory
     const sql = fs.readFileSync(path.resolve('./db/schema.sql'), 'utf-8');
 
     // Run the SQL commands
@@ -24,6 +25,7 @@ async function run() {
   } catch (error) {
     console.error('Error creating database schema:', error);
   } finally {
+    // Close the pool to release resources
     await pool.end();
   }
 }
