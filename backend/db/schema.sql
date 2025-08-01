@@ -2,6 +2,23 @@
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS entries CASCADE;
 
+CREATE TABLE IF NOT EXISTS albums (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    artist TEXT NOT NULL,
+    genre TEXT,
+    release_year INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE IF NOT EXISTS songs (
+    id SERIAL PRIMARY KEY,
+    album_id INTEGER REFERENCES albums(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    duration INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
 -- Create new tables
 -- Users table to store user information
 CREATE TABLE IF NOT EXISTS users (
@@ -16,12 +33,15 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS entries (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    artist TEXT NOT NULL,
-    album TEXT,
-    genre TEXT,
+    song_id INTEGER REFERENCES songs(id),
+    album_id INTEGER REFERENCES albums(id),
     mood TEXT,
     notes TEXT,
-    listened_at DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    listened_at TIMESTAMP NOT NULL,
+    rating INTEGER CHECK (rating BETWEEN 1 AND 10),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (
+        (song_id IS NOT NULL AND album_id IS NULL) OR
+        (song_id IS NULL AND album_id IS NOT NULL)
+    )
 );
