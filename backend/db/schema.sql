@@ -1,7 +1,10 @@
 -- Delete existing tables if they exist
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS entries CASCADE;
+DROP TABLE IF EXISTS albums CASCADE;
+DROP TABLE IF EXISTS songs CASCADE;
 
+--Albums table to store collections of songs
 CREATE TABLE IF NOT EXISTS albums (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -11,6 +14,7 @@ CREATE TABLE IF NOT EXISTS albums (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 
+--Songs table to store individual tracks that can be part of an album
 CREATE TABLE IF NOT EXISTS songs (
     id SERIAL PRIMARY KEY,
     album_id INTEGER REFERENCES albums(id) ON DELETE SET NULL,
@@ -19,7 +23,6 @@ CREATE TABLE IF NOT EXISTS songs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 
--- Create new tables
 -- Users table to store user information
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -29,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Entries table to store music entries, each entry linked to a user (for now)
+-- Entries table to store music entries from users, linked to users, albums, and songs
 CREATE TABLE IF NOT EXISTS entries (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
