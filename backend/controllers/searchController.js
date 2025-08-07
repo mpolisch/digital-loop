@@ -15,7 +15,7 @@ const search = async (req, res) => {
             'song' AS type
             FROM songs 
             JOIN albums ON songs.album_id = albums.id
-            WHERE songs.title ILIKE $1 OR albums.title ILIKE $1 OR albums.artist LIKE $1
+            WHERE songs.title ILIKE $1 OR albums.title ILIKE $1 OR albums.artist ILIKE $1
             UNION
             SELECT
             NULL AS song_id,
