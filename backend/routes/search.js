@@ -1,8 +1,7 @@
 import express from 'express';
-import pool from '../db/client.js';
-
+import { search } from '../controllers/searchController.js';
 const router = express.Router();
 
-router.get('/search', searchAlbums);
+router.get('/', search);
 
 export default router;

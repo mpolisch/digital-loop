@@ -1,10 +1,13 @@
 import express from 'express';
 import userRoutes from './routes/users.js';
+import searchRoutes from './routes/search.js';
 
 const app = express();
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
+
+app.use('/api/search', searchRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the backend server!');
