@@ -52,8 +52,21 @@ const callback = async (req, res) => {
             },
         }
     );
+    
+    const { access_token, refresh_token, expires_in } = response.data;
+
+    res.redirect(
+        "/#" + 
+        new URLSearchParams({
+            access_token,
+            refresh_token,
+            expires_in,
+        }).toString()
+    );
+
   } catch(err) {
     console.error("Error exchanging code for tokens:", err.response?.data || err);
+    res.redirect("/#" + new URLSearchParams({ error: "invalid_token" }).toString());
   }
 
 };
