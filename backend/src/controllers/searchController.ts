@@ -1,11 +1,15 @@
+import type { RequestHandler } from 'express';
+import type { SearchQuery } from '../types/search.js';
 import pool from '../db/client.js';
 
-const search = async (req, res) => {
+const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res, next) => {
 
-    const { query } = req.query;
+    const query = typeof req.query.query === 'string' ? req.query.query : '';
+
+    
 
     try {
-        const result = await pool.query(
+        const result = await pool.query<SearchResult>(
             `SELECT
             songs.id AS song_id, 
             songs.title AS song_title,
@@ -32,6 +36,7 @@ const search = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error '});
+        // next(err); //to be completed later
     }
 }
 
