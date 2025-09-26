@@ -1,11 +1,17 @@
+import type { RequestHandler } from 'express';
+import type { SearchQuery, SearchResult } from '../types/search.js';
 import pool from '../db/client.js';
 
-const search = async (req, res) => {
+const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
 
-    const { query } = req.query;
+    const query = req.query.query;
+
+    if (!query) {
+        return res.status(400).json({error: "Query is required"});
+    }
 
     try {
-        const result = await pool.query(
+        const result = await pool.query<SearchResult>(
             `SELECT
             songs.id AS song_id, 
             songs.title AS song_title,
