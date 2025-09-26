@@ -30,7 +30,6 @@ const login: RequestHandler = (req, res) => {
 
 const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => {
   const storedState = req.cookies['spotify_auth_state'];
-  console.log(req.query);
   const code = req.query.code || null;
   const state = req.query.state || null;
 
