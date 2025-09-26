@@ -1,14 +1,16 @@
+import type { RequestHandler } from 'express';
+import type { CallbackQuery } from '../types/spotify.js';
 import crypto from "crypto";
 import axios from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const generateRandomString = (length) => {
+const generateRandomString = (length: number) => {
   return crypto.randomBytes(length).toString("hex").slice(0, length);
 };
 
-const login = (req, res) => {
+const login: RequestHandler = (req, res) => {
   const state = generateRandomString(16);
   res.cookie('spotify_auth_state', state, {httpOnly: true, secure: false});
   const scope =
@@ -17,17 +19,18 @@ const login = (req, res) => {
 
   const params = new URLSearchParams({
         response_type: "code",
-        client_id: process.env.CLIENT_ID,
+        client_id: process.env.CLIENT_ID ?? "",
         scope: scope,
-        redirect_uri: process.env.REDIRECT_URI,
+        redirect_uri: process.env.REDIRECT_URI ?? "",
         state: state
       })
 
   res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
 };
 
-const callback = async (req, res) => {
+const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => {
   const storedState = req.cookies['spotify_auth_state'];
+  console.log(req.query);
   const code = req.query.code || null;
   const state = req.query.state || null;
 
@@ -37,8 +40,8 @@ const callback = async (req, res) => {
   
   try {
     const form = new URLSearchParams({
-        code: code,
-        redirect_uri: process.env.REDIRECT_URI,
+        code: code ?? "",
+        redirect_uri: process.env.REDIRECT_URI ?? "",
         grant_type: "authorization_code"
     });
 
@@ -64,8 +67,12 @@ const callback = async (req, res) => {
         }).toString()
     );
 
-  } catch(err) {
-    console.error("Error exchanging code for tokens:", err.response?.data || err);
+  } catch(err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error("Error exchanging code for tokens:", err.response?.data || err);
+    } else {
+      console.error("Error exchanging code for tokens:", err);
+    }
     res.redirect("/#" + new URLSearchParams({ error: "invalid_token" }).toString());
   }
 
