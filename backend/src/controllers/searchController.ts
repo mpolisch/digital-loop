@@ -1,12 +1,14 @@
 import type { RequestHandler } from 'express';
-import type { SearchQuery } from '../types/search.js';
+import type { SearchQuery, SearchResult } from '../types/search.js';
 import pool from '../db/client.js';
 
-const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res, next) => {
+const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
 
-    const query = typeof req.query.query === 'string' ? req.query.query : '';
+    const query = req.query.query;
 
-    
+    if (!query) {
+        return res.status(400).json({error: "Query is required"});
+    }
 
     try {
         const result = await pool.query<SearchResult>(
@@ -36,7 +38,6 @@ const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res, next) =
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error '});
-        // next(err); //to be completed later
     }
 }
 
