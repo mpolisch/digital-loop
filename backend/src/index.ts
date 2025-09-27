@@ -13,7 +13,7 @@ app.use(express.json());
 
 app.use('/api/search', searchRoutes);
 
-app.use('/spotify', spotifyRoutes)
+app.use('/api/spotify', spotifyRoutes)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the backend server!');
