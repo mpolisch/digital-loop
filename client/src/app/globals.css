@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.retro {
+  font-family: var(--font-press-start);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
