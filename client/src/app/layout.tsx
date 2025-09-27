@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, IBM_Plex_Mono, VT323 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react"
-import "./globals.css";
+import "@/styles/globals.css";
 
 export const pressStart = Press_Start_2P({
   weight: "400",
