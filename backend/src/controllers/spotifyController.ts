@@ -9,9 +9,13 @@ dotenv.config();
 let appAccessToken: string = "";
 let tokenExpiresAt: number | null = null;
 
+
+
 const generateRandomString = (length: number) => {
   return crypto.randomBytes(length).toString("hex").slice(0, length);
 };
+
+
 
 const getAppAccessToken = async (): Promise<string> => {
   const now = Date.now();
@@ -45,6 +49,8 @@ const getAppAccessToken = async (): Promise<string> => {
   return appAccessToken;
 }
 
+
+
 const login: RequestHandler = (req, res) => {
   const state = generateRandomString(16);
   res.cookie("spotify_auth_state", state, { httpOnly: true, secure: false });
@@ -61,6 +67,8 @@ const login: RequestHandler = (req, res) => {
 
   res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
 };
+
+
 
 const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => {
   const storedState = req.cookies["spotify_auth_state"];
@@ -120,15 +128,19 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
   }
 };
 
-const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
-  const q = req.query.q;
-  const type = req.query.type || null;
 
-  if (!q) {
-    return res.status(400).json({error: "Missing query"});
-  }
+
+const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
 
   try {
+
+    const q = req.query.q;
+    const type = req.query.type || null;
+
+    if (!q || typeof q !== "string" || !type || typeof type !== "string") {
+      return res.status(400).json({error: "Missing query"});
+    }
+
     const token = await getAppAccessToken();
 
     const response = await axios.get("https://api.spotify.com/v1/search", {

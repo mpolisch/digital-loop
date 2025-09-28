@@ -1,14 +1,19 @@
+"use client"
 import { BarChart, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function Footer() {
+
+  const router = useRouter();
+
   return (
     <footer className="bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center text-center">
         <div className="flex flex-col items-center">
           <div className="flex flex-col items-center mb-4">
             <div className="flex items-center gap-2 mb-4">
-              <BarChart className="h-5 w-5 text-primary" />
+              <BarChart className="text-purple-500 h-5 w-5 text-primary" />
               <span className="font-bold text-foreground retro">
                 digital-loop
               </span>
@@ -18,6 +23,7 @@ export function Footer() {
                 <Button
                   variant="link"
                   className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => router.push("/home")}
                 >
                   Home
                 </Button>
