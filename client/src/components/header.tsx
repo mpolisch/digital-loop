@@ -15,7 +15,7 @@ export function Header() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <button className="flex items-center gap-2 hover:opacity-80 transition-opacity" onClick={() => router.push("/home")}>
-              <BarChart className="text-purple-500 h-6 w-6 text-primary" />
+              <BarChart className="text-purple-500 h-6 w-6" />
               <span className="retro text-md font-bold text-foreground">digital-loop</span>
             </button>
             {/* <nav className="hidden md:flex items-center gap-6">

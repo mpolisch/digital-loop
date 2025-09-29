@@ -13,7 +13,7 @@ export function Footer() {
         <div className="flex flex-col items-center">
           <div className="flex flex-col items-center mb-4">
             <div className="flex items-center gap-2 mb-4">
-              <BarChart className="text-purple-500 h-5 w-5 text-primary" />
+              <BarChart className="text-purple-500 h-5 w-5" />
               <span className="font-bold text-foreground retro">
                 digital-loop
               </span>
