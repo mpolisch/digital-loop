@@ -149,8 +149,12 @@ const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
     });
 
     res.json(response.data);
-  } catch (err: any) {
-    console.error("Search error:", err.response?.data || err.message);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error("Search error:", err.response?.data || err);
+    } else {
+      console.error("Search error:", err);
+    }
     res.status(500).json({error: "Failed to fetch from Spotify API"});
   }
 };
