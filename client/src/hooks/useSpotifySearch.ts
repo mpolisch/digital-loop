@@ -15,7 +15,7 @@ function useSpotifySearch<T extends SpotifySearchType>(defaultType: T) {
       setLoading(true);
       setError(null);
       const query = new URLSearchParams({ q, type });
-      const res = await fetch(`/api/proxy/spotify/search?${query.toString()}`);
+      const res = await fetch(`/api/search?${query.toString()}`);
       if (!res.ok) throw new Error("Request failed");
 
       const data = await res.json();
