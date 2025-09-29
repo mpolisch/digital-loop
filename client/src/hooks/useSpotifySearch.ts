@@ -1,12 +1,16 @@
 "use client";
 import { useState } from "react";
+import { SpotifySearchType, SpotifySearchResultMap } from "@/types/spotify";
 
-function useSpotifySearch() {
-  const [results, setResults] = useState<any[]>([]);
+function useSpotifySearch<T extends SpotifySearchType>(defaultType: T) {
+  const [results, setResults] = useState<SpotifySearchResultMap[T][]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = async (q: string, type: string) => {
+  const search = async (q: string, type: T = defaultType) => {
+
+    if (!q.trim()) return;
+
     try {
       setLoading(true);
       setError(null);
@@ -14,28 +18,15 @@ function useSpotifySearch() {
       const res = await fetch(`/api/proxy/spotify/search?${query.toString()}`);
       if (!res.ok) throw new Error("Request failed");
 
-      console.log(type)
-      console.log(q)
-
       const data = await res.json();
-      switch (type) {
-        case "artist":
-          setResults(data.artists?.items ?? []);
-          break;
-        case "album":
-          setResults(data.albums?.items ?? []);
-          break;
-        case "track":
-          setResults(data.tracks?.items ?? []);
-          break;
-        case "playlist":
-          setResults(data.playlists?.items ?? []);
-          break;
-        default:
-          setResults([]);
+      const key = (type + "s") as keyof typeof data; // pluralize type
+      setResults(data[key]?.items ?? []);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Failed to fetch search results: ${err.message}`);
+      } else {
+        setError(`Failed to fetch search results: unknown error`);
       }
-    } catch (err) {
-      setError("Failed to fetch search results");
     } finally {
       setLoading(false);
     }

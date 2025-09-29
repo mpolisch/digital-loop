@@ -28,7 +28,6 @@ export default function SearchBar() {
                   <SelectItem value="artist">Artist</SelectItem>
                   <SelectItem value="album">Album</SelectItem>
                   <SelectItem value="track">Track</SelectItem>
-                  <SelectItem value="playlist">Playlist</SelectItem>
                 </SelectContent>
               </Select>
               <div className="relative flex-1">

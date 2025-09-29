@@ -145,7 +145,7 @@ const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
 
     const response = await axios.get("https://api.spotify.com/v1/search", {
       headers: {Authorization: `Bearer ${token}`},
-      params: { q, type: type, limit: 15},
+      params: { q, type: type, limit: 20},
     });
 
     res.json(response.data);
