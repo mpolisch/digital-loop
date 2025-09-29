@@ -44,7 +44,7 @@ const getAppAccessToken = async (): Promise<string> => {
   );
 
   appAccessToken = response.data.access_token;
-  tokenExpiresAt = now + response.data.expires_in * 1000-5000;
+  tokenExpiresAt = now + (response.data.expires_in * 1000) - 5000;
 
   return appAccessToken;
 }
