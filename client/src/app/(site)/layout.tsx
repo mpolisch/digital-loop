@@ -11,10 +11,8 @@ export default function SiteLayout({
   return (
     <>
       <Header />
-      <body>
-        <Suspense fallback={null}>{children}</Suspense>
-        <Analytics />
-      </body>
+      <Suspense fallback={null}>{children}</Suspense>
+      <Analytics />
       <Footer />
       </>
   );
