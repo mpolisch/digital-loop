@@ -18,17 +18,6 @@ export function Header() {
               <BarChart className="text-purple-500 h-6 w-6" />
               <span className="retro text-md font-bold text-foreground">digital-loop</span>
             </button>
-            {/* <nav className="hidden md:flex items-center gap-6">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Plus
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Support
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Feedback
-              </a>
-            </nav> */}
           </div>
 
           <div className="flex items-center gap-4">
