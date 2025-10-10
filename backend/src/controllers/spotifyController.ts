@@ -1,5 +1,8 @@
 import type { RequestHandler } from "express";
 import type { CallbackQuery, SearchQuery } from "../types/spotify.js";
+import { type SpotifyUser } from "../types/user.js";
+import { createOrUpdateUser } from "../services/userService.js";
+import { generateToken } from "../services/authService.js";
 import crypto from "crypto";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -77,7 +80,8 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
 
   if (!state || state !== storedState) {
     return res.redirect(
-      "/#" + new URLSearchParams({ error: "state_mismatch" }).toString()
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#` + 
+      new URLSearchParams({ error: "state_mismatch" }).toString()
     );
   }
 
@@ -105,12 +109,24 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
 
     const { access_token, refresh_token, expires_in } = response.data;
 
+    // Get user data from Spotify
+    const userResponse = await axios.get('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${access_token}` }
+    });
+
+    const spotifyUser: SpotifyUser = userResponse.data;
+
+    // Save or update user in database
+    const user = await createOrUpdateUser(spotifyUser);
+    const jwtToken = generateToken(user.id, user.spotify_id);
+
     res.redirect(
-      "/#" +
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/home#` +
         new URLSearchParams({
-          access_token,
-          refresh_token,
-          expires_in,
+          token: jwtToken,
+          spotify_access_token: access_token,
+          spotify_refresh_token: refresh_token,
+          expires_in: expires_in.toString(),
         }).toString()
     );
   } catch (err: unknown) {
@@ -123,7 +139,8 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
       console.error("Error exchanging code for tokens:", err);
     }
     res.redirect(
-      "/#" + new URLSearchParams({ error: "invalid_token" }).toString()
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#` + 
+      new URLSearchParams({ error: "invalid_token" }).toString()
     );
   }
 };
@@ -160,3 +177,6 @@ const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
 };
 
 export { login, callback, search };
+
+
+

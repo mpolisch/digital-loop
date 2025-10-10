@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, IBM_Plex_Mono, VT323 } from "next/font/google";
 import "@/styles/globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const pressStart = Press_Start_2P({
   weight: "400",
@@ -34,7 +35,9 @@ export default function RootLayout({
       className={`dark ${vt323.className} ${pressStart.variable}`}
     >
     <body>
-        {children}
+        <AuthProvider>
+            {children}
+        </AuthProvider>
     </body>
     </html>
     )
