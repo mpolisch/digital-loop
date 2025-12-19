@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { SpotifySearchType, SpotifySearchResultMap } from "@/types/spotify";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+
 function useSpotifySearch<T extends SpotifySearchType>(defaultType: T) {
   const [results, setResults] = useState<SpotifySearchResultMap[T][]>([]);
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,9 @@ function useSpotifySearch<T extends SpotifySearchType>(defaultType: T) {
       setLoading(true);
       setError(null);
       const query = new URLSearchParams({ q, type });
-      const res = await fetch(`/api/search?${query.toString()}`);
+      const res = await fetch(`${BACKEND_URL}/api/spotify/search?${query.toString()}`, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error("Request failed");
 
       const data = await res.json();
