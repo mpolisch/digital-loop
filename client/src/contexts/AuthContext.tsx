@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthContextType, User } from '@/types/auth';
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -12,10 +13,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const checkSessionHealth = React.useCallback(async (authToken: string) => {
         try {
-            const response = await fetch('/api/users/session', {
+            const response = await fetch(`${BACKEND_URL}/api/users/session`, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                 },
+                credentials: 'include',
             });
 
             if (!response.ok) {

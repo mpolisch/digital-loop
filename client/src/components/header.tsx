@@ -16,12 +16,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000'
+
 export function Header() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
 
   const handleLogin = () => {
-    window.location.href = "/api/auth/spotify/login";
+    window.location.href = `${BACKEND_URL}/api/auth/spotify/login`;
   };
 
   return (
