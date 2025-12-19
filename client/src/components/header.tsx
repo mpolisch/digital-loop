@@ -23,7 +23,7 @@ export function Header() {
   const { user, loading, logout } = useAuth();
 
   const handleLogin = () => {
-    window.location.href = `${BACKEND_URL}/api/auth/spotify/login`;
+    window.location.href = `${BACKEND_URL}/api/spotify/login`;
   };
 
   return (
