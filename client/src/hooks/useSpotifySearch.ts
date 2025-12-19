@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { SpotifySearchType, SpotifySearchResultMap } from "@/types/spotify";
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
 function useSpotifySearch<T extends SpotifySearchType>(defaultType: T) {
   const [results, setResults] = useState<SpotifySearchResultMap[T][]>([]);
