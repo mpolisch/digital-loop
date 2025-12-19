@@ -2,12 +2,33 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthContextType, User } from '@/types/auth';
 
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+    const checkSessionHealth = React.useCallback(async (authToken: string) => {
+        try {
+            const response = await fetch('/api/users/session', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                if (data.needsReauth) {
+                    console.warn('Spotify session expired. User needs to re-authenticate.');
+                    // Optionally show a notification to the user
+                }
+            }
+        } catch (error) {
+            console.error('Error checking session health:', error);
+        }
+    }, []);
 
     const fetchUser = React.useCallback(async (authToken: string) => {
         try {
@@ -20,6 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (response.ok) {
             const userData = await response.json();
             setUser(userData);
+            
+            // Check Spotify session health
+            checkSessionHealth(authToken);
         } else {
             // Token is invalid, remove it
             logout();
@@ -30,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
         setLoading(false);
         }
-    }, []);
+    }, [checkSessionHealth]);
 
     const login = React.useCallback((authToken: string) => {
         setToken(authToken);

@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS users (
     profile_img TEXT,
     email TEXT,
     country TEXT,
+    spotify_access_token TEXT,
+    spotify_refresh_token TEXT,
+    token_expires_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

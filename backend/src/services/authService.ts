@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken';
 import type { RequestHandler } from 'express';
 import { type JWTPayload } from '../types/user.js';
+import dotenv from "dotenv";
 
-const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET as string;
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required')
-}
+dotenv.config();
+
+const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET ?? (() => {
+  throw new Error('JWT_SECRET environment variable is required');
+})();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '7d';
 
 export const generateToken = (userId: number, spotifyId: string): string => {

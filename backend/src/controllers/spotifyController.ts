@@ -1,64 +1,28 @@
 import type { RequestHandler } from "express";
 import type { CallbackQuery, SearchQuery } from "../types/spotify.js";
-import { type SpotifyUser } from "../types/user.js";
-import { createOrUpdateUser } from "../services/userService.js";
 import { generateToken } from "../services/authService.js";
-import crypto from "crypto";
+import { 
+  generateRandomString, 
+  handleSpotifyCallback,
+  searchSpotify 
+} from "../services/spotifyService.js";
 import axios from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-let appAccessToken: string = "";
-let tokenExpiresAt: number | null = null;
-
-
-
-const generateRandomString = (length: number) => {
-  return crypto.randomBytes(length).toString("hex").slice(0, length);
-};
-
-
-
-const getAppAccessToken = async (): Promise<string> => {
-  const now = Date.now();
-
-  if (appAccessToken && tokenExpiresAt && now < tokenExpiresAt) {
-    return appAccessToken;
-  }
-
-  const form = new URLSearchParams({
-    grant_type: "client_credentials",
-  })
-
-  const response = await axios.post(
-    "https://accounts.spotify.com/api/token",
-    form.toString(),
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " +
-          Buffer.from(
-            process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
-          ).toString("base64"),
-      },
-    }
-  );
-
-  appAccessToken = response.data.access_token;
-  tokenExpiresAt = now + (response.data.expires_in * 1000) - 5000;
-
-  return appAccessToken;
-}
-
-
 
 const login: RequestHandler = (req, res) => {
   const state = generateRandomString(16);
-  res.cookie("spotify_auth_state", state, { httpOnly: true, secure: false });
+  
+  res.cookie("spotify_auth_state", state, { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 600000 // 10 minutes
+  });
+  
   const scope = "user-read-private user-read-email";
-  // "user-read-recently-played user-top-read playlist-read-private";
 
   const params = new URLSearchParams({
     response_type: "code",
@@ -71,13 +35,12 @@ const login: RequestHandler = (req, res) => {
   res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
 };
 
-
-
 const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => {
   const storedState = req.cookies["spotify_auth_state"];
   const code = req.query.code || null;
   const state = req.query.state || null;
 
+  // Validate state for CSRF protection
   if (!state || state !== storedState) {
     return res.redirect(
       `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#` + 
@@ -85,59 +48,28 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
     );
   }
 
+  // Clear the state cookie
+  res.clearCookie("spotify_auth_state");
+
   try {
-    const form = new URLSearchParams({
-      code: code ?? "",
-      redirect_uri: process.env.REDIRECT_URI ?? "",
-      grant_type: "authorization_code",
-    });
-
-    const response = await axios.post(
-      "https://accounts.spotify.com/api/token",
-      form.toString(),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization:
-            "Basic " +
-            Buffer.from(
-              process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
-            ).toString("base64"),
-        },
-      }
-    );
-
-    const { access_token, refresh_token, expires_in } = response.data;
-
-    // Get user data from Spotify
-    const userResponse = await axios.get('https://api.spotify.com/v1/me', {
-      headers: { Authorization: `Bearer ${access_token}` }
-    });
-
-    const spotifyUser: SpotifyUser = userResponse.data;
-
-    // Save or update user in database
-    const user = await createOrUpdateUser(spotifyUser);
+    // Handle OAuth callback via service
+    const { user } = await handleSpotifyCallback(code!);
+    
+    // Generate JWT for frontend
     const jwtToken = generateToken(user.id, user.spotify_id);
 
+    // Redirect to frontend with JWT only
     res.redirect(
       `${process.env.FRONTEND_URL || 'http://localhost:3000'}/home#` +
-        new URLSearchParams({
-          token: jwtToken,
-          spotify_access_token: access_token,
-          spotify_refresh_token: refresh_token,
-          expires_in: expires_in.toString(),
-        }).toString()
+        new URLSearchParams({ token: jwtToken }).toString()
     );
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      console.error(
-        "Error exchanging code for tokens:",
-        err.response?.data || err
-      );
+      console.error("OAuth callback error:", err.response?.data || err);
     } else {
-      console.error("Error exchanging code for tokens:", err);
+      console.error("OAuth callback error:", err);
     }
+    
     res.redirect(
       `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#` + 
       new URLSearchParams({ error: "invalid_token" }).toString()
@@ -146,33 +78,28 @@ const callback: RequestHandler<{}, {}, {}, CallbackQuery> = async (req, res) => 
 };
 
 
-
 const search: RequestHandler<{}, {}, {}, SearchQuery> = async (req, res) => {
-
   try {
-
     const q = req.query.q;
     const type = req.query.type || null;
 
+    // Validate query parameters
     if (!q || typeof q !== "string" || !type || typeof type !== "string") {
-      return res.status(400).json({error: "Missing query"});
+      return res.status(400).json({ error: "Missing or invalid query parameters" });
     }
 
-    const token = await getAppAccessToken();
+    // Perform search via service
+    const results = await searchSpotify(q, type);
 
-    const response = await axios.get("https://api.spotify.com/v1/search", {
-      headers: {Authorization: `Bearer ${token}`},
-      params: { q, type: type, limit: 20},
-    });
-
-    res.json(response.data);
+    res.json(results);
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       console.error("Search error:", err.response?.data || err);
     } else {
       console.error("Search error:", err);
     }
-    res.status(500).json({error: "Failed to fetch from Spotify API"});
+    
+    res.status(500).json({ error: "Failed to fetch from Spotify API" });
   }
 };
 

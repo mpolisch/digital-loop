@@ -13,6 +13,9 @@ export interface User {
   email: string;
   country: string;
   profile_img?: string;
+  spotify_access_token?: string;
+  spotify_refresh_token?: string;
+  token_expires_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
